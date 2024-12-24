@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>RESTful API Menggunakan Request Body untuk mencegah Ancaman STRIDE</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      margin: 20px;
+    }
+    form {
+      margin-bottom: 20px;
+    }
+    input, button {
+      margin: 5px;
+      padding: 10px;
+    }
+    .output {
+      margin-top: 20px;
+    }
+    .output pre {
+      background: #f4f4f4;
+      padding: 10px;
+    }
+  </style>
+</head>
+<body>
+  <h1>RESTful API Menggunakan Request Body untuk mencegah Ancaman STRIDE</h1>
+
+  <!-- Form untuk membuat pengguna baru -->
+  <form id="create-user-form">
+    <h2>Buat Pengguna Baru</h2>
+    <input type="text" id="create-name" placeholder="Nama" required />
+    <input type="email" id="create-email" placeholder="Email" required />
+    <button type="submit">Buat Pengguna</button>
+  </form>
+
+  <!-- Form untuk mendapatkan pengguna berdasarkan ID -->
+  <form id="get-user-form">
+    <h2>Dapatkan Pengguna Berdasarkan ID</h2>
+    <input type="number" id="get-id" placeholder="ID Pengguna" required />
+    <button type="submit">Cari Pengguna</button>
+  </form>
+
+  <!-- Output -->
+  <div class="output" id="output">
+    <h2>Output</h2>
+    <pre id="output-data">Tidak ada data.</pre>
+  </div>
+
+  <script>
+    const API_URL = "https://test-server-dread.vercel.app/users";
+
+    // Output element
+    const outputData = document.getElementById("output-data");
+
+    // Fungsi untuk menampilkan output
+    const displayOutput = (data) => {
+      outputData.textContent = JSON.stringify(data, null, 2);
+    };
+
+    // Form untuk membuat pengguna baru
+    document.getElementById("create-user-form").addEventListener("submit", async (e) => {
+      e.preventDefault();
+      const name = document.getElementById("create-name").value;
+      const email = document.getElementById("create-email").value;
+
+      try {
+        const response = await fetch(API_URL, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ name, email }),
+        });
+        const data = await response.json();
+        displayOutput(data);
+      } catch (error) {
+        displayOutput({ error: error.message });
+      }
+    });
+
+    // Form untuk mendapatkan pengguna berdasarkan ID
+    document.getElementById("get-user-form").addEventListener("submit", async (e) => {
+      e.preventDefault();
+      const id = document.getElementById("get-id").value;
+
+      try {
+        const response = await fetch(`${API_URL}/${id}`);
+        if (!response.ok) throw new Error("Pengguna tidak ditemukan");
+        const data = await response.json();
+        displayOutput(data);
+      } catch (error) {
+        displayOutput({ error: error.message });
+      }
+    });
+  </script>
+</body>
+</html>
