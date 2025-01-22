@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>RESTful API Menggunakan Request Body untuk mencegah Ancaman STRIDE</title>
+  <title>RESTful API untuk Mengelola Ancaman dengan DREAD</title>
   <style>
     body {
       font-family: Arial, sans-serif;
@@ -16,81 +16,132 @@
       margin: 5px;
       padding: 10px;
     }
-    .output {
+    table {
+      width: 100%;
+      border-collapse: collapse;
       margin-top: 20px;
     }
-    .output pre {
-      background: #f4f4f4;
+    table, th, td {
+      border: 1px solid #ddd;
+    }
+    th, td {
+      text-align: left;
       padding: 10px;
+    }
+    th {
+      background-color: #f4f4f4;
     }
   </style>
 </head>
 <body>
-  <h1>RESTful API Menggunakan Request Body untuk mencegah Ancaman STRIDE</h1>
+  <h1>RESTful API untuk Mengelola Ancaman dengan DREAD</h1>
 
-  <!-- Form untuk membuat pengguna baru -->
-  <form id="create-user-form">
-    <h2>Buat Pengguna Baru</h2>
-    <input type="text" id="create-name" placeholder="Nama" required />
-    <input type="email" id="create-email" placeholder="Email" required />
-    <button type="submit">Buat Pengguna</button>
+  <!-- Form untuk membuat ancaman baru -->
+  <form id="create-threat-form">
+    <h2>Buat Ancaman Baru</h2>
+    <input type="text" id="threat-name" placeholder="Nama Ancaman" required />
+    <input type="number" id="damage" placeholder="Damage (1-10)" required />
+    <input type="number" id="reproducibility" placeholder="Reproducibility (1-10)" required />
+    <input type="number" id="exploitability" placeholder="Exploitability (1-10)" required />
+    <input type="number" id="affected-users" placeholder="Affected Users (1-10)" required />
+    <input type="number" id="discoverability" placeholder="Discoverability (1-10)" required />
+    <button type="submit">Buat Ancaman</button>
   </form>
 
-  <!-- Form untuk mendapatkan pengguna berdasarkan ID -->
-  <form id="get-user-form">
-    <h2>Dapatkan Pengguna Berdasarkan ID</h2>
-    <input type="number" id="get-id" placeholder="ID Pengguna" required />
-    <button type="submit">Cari Pengguna</button>
+  <!-- Form untuk mendapatkan ancaman berdasarkan ID -->
+  <form id="get-threat-form">
+    <h2>Dapatkan Ancaman Berdasarkan ID</h2>
+    <input type="number" id="threat-id" placeholder="ID Ancaman" required />
+    <button type="submit">Cari Ancaman</button>
   </form>
 
-  <!-- Output -->
-  <div class="output" id="output">
+  <!-- Tabel Output -->
+  <div class="output">
     <h2>Output</h2>
-    <pre id="output-data">Tidak ada data.</pre>
+    <table id="output-table">
+      <thead>
+        <tr>
+          <th>ID</th>
+          <th>Nama</th>
+          <th>Damage</th>
+          <th>Reproducibility</th>
+          <th>Exploitability</th>
+          <th>Affected Users</th>
+          <th>Discoverability</th>
+          <th>Risk Score</th>
+          <th>Description</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td colspan="9" style="text-align: center;">Tidak ada data.</td>
+        </tr>
+      </tbody>
+    </table>
   </div>
 
   <script>
-    const API_URL = "https://test-server-dread.vercel.app/users";
+    const API_URL = "https://test-server-dread.vercel.app/threats";
 
-    // Output element
-    const outputData = document.getElementById("output-data");
+    // Tabel output
+    const outputTableBody = document.getElementById("output-table").querySelector("tbody");
 
-    // Fungsi untuk menampilkan output
-    const displayOutput = (data) => {
-      outputData.textContent = JSON.stringify(data, null, 2);
+    // Fungsi untuk menampilkan data dalam tabel
+    const displayTable = (data) => {
+      // Kosongkan tabel sebelumnya
+      outputTableBody.innerHTML = "";
+
+      // Tambahkan baris baru ke tabel
+      const row = document.createElement("tr");
+      row.innerHTML = `
+        <td>${data.id}</td>
+        <td>${data.name}</td>
+        <td>${data.damage}</td>
+        <td>${data.reproducibility}</td>
+        <td>${data.exploitability}</td>
+        <td>${data.affected_users}</td>
+        <td>${data.discoverability}</td>
+        <td>${data.riskScore}</td>
+        <td>${data.description}</td>
+      `;
+      outputTableBody.appendChild(row);
     };
 
-    // Form untuk membuat pengguna baru
-    document.getElementById("create-user-form").addEventListener("submit", async (e) => {
+    // Form untuk membuat ancaman baru
+    document.getElementById("create-threat-form").addEventListener("submit", async (e) => {
       e.preventDefault();
-      const name = document.getElementById("create-name").value;
-      const email = document.getElementById("create-email").value;
+      const name = document.getElementById("threat-name").value;
+      const damage = parseInt(document.getElementById("damage").value, 10);
+      const reproducibility = parseInt(document.getElementById("reproducibility").value, 10);
+      const exploitability = parseInt(document.getElementById("exploitability").value, 10);
+      const affected_users = parseInt(document.getElementById("affected-users").value, 10);
+      const discoverability = parseInt(document.getElementById("discoverability").value, 10);
 
       try {
         const response = await fetch(API_URL, {
           method: "POST",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ name, email }),
+          body: JSON.stringify({ name, damage, reproducibility, exploitability, affected_users, discoverability }),
         });
         const data = await response.json();
-        displayOutput(data);
+        displayTable(data);
       } catch (error) {
-        displayOutput({ error: error.message });
+        alert("Error: " + error.message);
       }
     });
 
-    // Form untuk mendapatkan pengguna berdasarkan ID
-    document.getElementById("get-user-form").addEventListener("submit", async (e) => {
+    // Form untuk mendapatkan ancaman berdasarkan ID
+    document.getElementById("get-threat-form").addEventListener("submit", async (e) => {
       e.preventDefault();
-      const id = document.getElementById("get-id").value;
+      const id = document.getElementById("threat-id").value;
 
       try {
         const response = await fetch(`${API_URL}/${id}`);
-        if (!response.ok) throw new Error("Pengguna tidak ditemukan");
+        if (!response.ok) throw new Error("Ancaman tidak ditemukan");
         const data = await response.json();
-        displayOutput(data);
+        displayTable(data);
       } catch (error) {
-        displayOutput({ error: error.message });
+        alert("Error: " + error.message);
       }
     });
   </script>
